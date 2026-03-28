@@ -1,0 +1,47 @@
+[
+  {
+    "id": "pet_treatment_experience_v1",
+    "category": "optimize",
+    "signals_match": ["pet_health", "treatment_success", "symptom_resolved"],
+    "preconditions": ["sample_size_gte_5"],
+    "strategy": [
+      "Extract symptom-treatment pairs from resolved cases",
+      "Score by recovery speed and owner satisfaction",
+      "Package with species/breed/age applicability tags",
+      "Validate treatment safety against known contraindications"
+    ],
+    "constraints": { "max_files": 5 },
+    "validation": ["npm test -- --grep treatment"],
+    "version": 1
+  },
+  {
+    "id": "pet_diet_adaptation_v1",
+    "category": "optimize",
+    "signals_match": ["diet_feedback", "health_improvement", "pet_nutrition"],
+    "preconditions": ["sample_size_gte_5"],
+    "strategy": [
+      "Analyze diet-health correlation from feeding logs",
+      "Extract effective diet patterns by breed and condition",
+      "Share validated nutrition insights across similar pets",
+      "Flag allergen risks based on breed-specific data"
+    ],
+    "constraints": { "max_files": 3 },
+    "validation": ["npm test -- --grep diet"],
+    "version": 1
+  },
+  {
+    "id": "cross_pet_knowledge_transfer_v1",
+    "category": "innovate",
+    "signals_match": ["new_symptom", "no_local_experience", "similar_case_found"],
+    "preconditions": ["source_gene_validated", "no_active_errors"],
+    "strategy": [
+      "Match symptoms against known Gene patterns by species and breed similarity",
+      "Transfer applicable treatment insights with 0.7 confidence threshold",
+      "Mark transferred insights as unverified until first feedback",
+      "Calibrate confidence after 3 owner interactions with target condition"
+    ],
+    "constraints": { "max_files": 3 },
+    "validation": ["npm test -- --grep transfer"],
+    "version": 1
+  }
+]

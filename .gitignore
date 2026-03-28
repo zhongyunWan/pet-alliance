@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.db
+*.db-wal
+*.db-shm
+.env
+prd.md
+memory/
+a2a/outbox/
+assets/gep/events.jsonl
+.claude/

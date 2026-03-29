@@ -193,5 +193,286 @@
       "confidence": 0.5,
       "sampleSize": 1
     }
+  },
+  {
+    "id": "pet_3岁英短需要做什么疫苗和驱虫？_f78d43cc",
+    "category": "optimize",
+    "signals_match": [
+      "pet_health",
+      "treatment_success",
+      "3岁英短需要做什么疫苗和驱虫？",
+      "cat"
+    ],
+    "preconditions": [
+      "treatment_method: 基础免疫确认",
+      "treatment_method: 室内猫驱虫建议"
+    ],
+    "strategy": [
+      "Treatment: 基础免疫确认 (effectiveness: 0.95)",
+      "Treatment: 室内猫驱虫建议 (effectiveness: 0.9)",
+      "Prevention: 定期接种疫苗加强针",
+      "Prevention: 每3-6个月进行体内驱虫",
+      "Prevention: 每1-3个月进行体外驱虫",
+      "Prevention: 保持室内环境清洁",
+      "Prevention: 定期体检监测健康状况"
+    ],
+    "constraints": {
+      "source": "owner_feedback",
+      "rating": 5,
+      "species": "cat",
+      "condition": "3岁英短需要做什么疫苗和驱虫？"
+    },
+    "validation": [
+      "feedback_score_gte_4"
+    ],
+    "version": 1,
+    "pet_experience": {
+      "condition": "3岁英短需要做什么疫苗和驱虫？",
+      "species": "cat",
+      "breed": "橘猫",
+      "treatments": [
+        {
+          "method": "基础免疫确认",
+          "effectiveness": 0.95,
+          "notes": "确认猫咪已接种核心疫苗，包括猫三联和狂犬病疫苗"
+        },
+        {
+          "method": "室内猫驱虫建议",
+          "effectiveness": 0.9,
+          "notes": "针对室内猫的驱虫方案，建议定期体内外驱虫"
+        }
+      ],
+      "dietAdjustments": [],
+      "preventionTips": [
+        "定期接种疫苗加强针",
+        "每3-6个月进行体内驱虫",
+        "每1-3个月进行体外驱虫",
+        "保持室内环境清洁",
+        "定期体检监测健康状况"
+      ],
+      "confidence": 0.8,
+      "sampleSize": 1
+    }
+  },
+  {
+    "id": "pet_我的猫咪一直打喷嚏，怎么办_7712e46f",
+    "category": "optimize",
+    "signals_match": [
+      "pet_health",
+      "treatment_success",
+      "我的猫咪一直打喷嚏，怎么办",
+      "cat"
+    ],
+    "preconditions": [
+      "treatment_method: 家庭护理建议",
+      "treatment_method: 常见原因排查"
+    ],
+    "strategy": [
+      "Treatment: 家庭护理建议 (effectiveness: 0.9)",
+      "Treatment: 常见原因排查 (effectiveness: 0.85)",
+      "Diet: 保证充足新鲜饮水",
+      "Diet: 可适当补充增强免疫力的营养补充剂",
+      "Prevention: 定期清洁猫咪生活环境",
+      "Prevention: 减少接触粉尘、烟雾等刺激物",
+      "Prevention: 保持室内空气流通",
+      "Prevention: 定期接种疫苗预防呼吸道疾病"
+    ],
+    "constraints": {
+      "source": "owner_feedback",
+      "rating": 5,
+      "species": "cat",
+      "condition": "我的猫咪一直打喷嚏，怎么办"
+    },
+    "validation": [
+      "feedback_score_gte_4"
+    ],
+    "version": 1,
+    "pet_experience": {
+      "condition": "我的猫咪一直打喷嚏，怎么办",
+      "species": "cat",
+      "breed": "美短虎斑",
+      "treatments": [
+        {
+          "method": "家庭护理建议",
+          "effectiveness": 0.9,
+          "notes": "保持环境清洁，使用加湿器增加空气湿度，减少刺激性物质暴露"
+        },
+        {
+          "method": "常见原因排查",
+          "effectiveness": 0.85,
+          "notes": "排查过敏原、病毒感染或其他呼吸道刺激因素"
+        }
+      ],
+      "dietAdjustments": [
+        "保证充足新鲜饮水",
+        "可适当补充增强免疫力的营养补充剂"
+      ],
+      "preventionTips": [
+        "定期清洁猫咪生活环境",
+        "减少接触粉尘、烟雾等刺激物",
+        "保持室内空气流通",
+        "定期接种疫苗预防呼吸道疾病"
+      ],
+      "confidence": 0.8,
+      "sampleSize": 1
+    }
+  },
+  {
+    "id": "pet_我的三只猫老是打架，应该怎么办？_7ad581c9",
+    "category": "optimize",
+    "signals_match": [
+      "pet_health",
+      "treatment_success",
+      "我的三只猫老是打架，应该怎么办？",
+      "cat"
+    ],
+    "preconditions": [
+      "treatment_method: 多猫家庭环境资源管理（提供多个食碗、猫砂盆、休息区）",
+      "treatment_method: 垂直空间与藏身处设置",
+      "treatment_method: 逐步重新引入陌生猫咪",
+      "treatment_method: 费洛蒙扩散器使用",
+      "treatment_method: 就医评估排除潜在疾病"
+    ],
+    "strategy": [
+      "Treatment: 多猫家庭环境资源管理（提供多个食碗、猫砂盆、休息区） (effectiveness: 0.9)",
+      "Treatment: 垂直空间与藏身处设置 (effectiveness: 0.85)",
+      "Treatment: 逐步重新引入陌生猫咪 (effectiveness: 0.8)",
+      "Treatment: 费洛蒙扩散器使用 (effectiveness: 0.75)",
+      "Treatment: 就医评估排除潜在疾病 (effectiveness: 0.9)",
+      "Diet: 保持各猫独立进食区域",
+      "Diet: 确保每只猫有足够进食空间避免争抢",
+      "Prevention: 新猫引入时采用渐进式接触",
+      "Prevention: 每增加一只猫对应增加资源（猫砂盆、食碗、休息区）",
+      "Prevention: 提供足够的垂直空间和藏身处",
+      "Prevention: 定期进行环境丰容减少压力",
+      "Prevention: 多猫家庭定期观察猫咪互动行为"
+    ],
+    "constraints": {
+      "source": "owner_feedback",
+      "rating": 5,
+      "species": "cat",
+      "condition": "我的三只猫老是打架，应该怎么办？"
+    },
+    "validation": [
+      "feedback_score_gte_4"
+    ],
+    "version": 1,
+    "pet_experience": {
+      "condition": "我的三只猫老是打架，应该怎么办？",
+      "species": "cat",
+      "breed": "美短虎斑",
+      "treatments": [
+        {
+          "method": "多猫家庭环境资源管理（提供多个食碗、猫砂盆、休息区）",
+          "effectiveness": 0.9,
+          "notes": "减少资源竞争导致的冲突"
+        },
+        {
+          "method": "垂直空间与藏身处设置",
+          "effectiveness": 0.85,
+          "notes": "提供猫咪安全感和躲避空间"
+        },
+        {
+          "method": "逐步重新引入陌生猫咪",
+          "effectiveness": 0.8,
+          "notes": "通过气味熟悉和视觉接触逐步适应"
+        },
+        {
+          "method": "费洛蒙扩散器使用",
+          "effectiveness": 0.75,
+          "notes": "帮助猫咪放松情绪减少攻击性"
+        },
+        {
+          "method": "就医评估排除潜在疾病",
+          "effectiveness": 0.9,
+          "notes": "确认无医学原因导致的攻击行为"
+        }
+      ],
+      "dietAdjustments": [
+        "保持各猫独立进食区域",
+        "确保每只猫有足够进食空间避免争抢"
+      ],
+      "preventionTips": [
+        "新猫引入时采用渐进式接触",
+        "每增加一只猫对应增加资源（猫砂盆、食碗、休息区）",
+        "提供足够的垂直空间和藏身处",
+        "定期进行环境丰容减少压力",
+        "多猫家庭定期观察猫咪互动行为"
+      ],
+      "confidence": 0.8,
+      "sampleSize": 1
+    }
+  },
+  {
+    "id": "pet_我家猫掉毛严重，皮肤有圆形红斑_768d1879",
+    "category": "optimize",
+    "signals_match": [
+      "pet_health",
+      "treatment_success",
+      "我家猫掉毛严重，皮肤有圆形红斑",
+      "cat"
+    ],
+    "preconditions": [
+      "treatment_method: 抗真菌药物治疗",
+      "treatment_method: 药浴治疗",
+      "treatment_method: 环境消毒"
+    ],
+    "strategy": [
+      "Treatment: 抗真菌药物治疗 (effectiveness: 0.9)",
+      "Treatment: 药浴治疗 (effectiveness: 0.8)",
+      "Treatment: 环境消毒 (effectiveness: 0.85)",
+      "Diet: 增加优质蛋白质摄入",
+      "Diet: 补充Omega-3脂肪酸",
+      "Diet: 补充维生素B族",
+      "Prevention: 定期驱虫和体检",
+      "Prevention: 保持环境清洁干燥",
+      "Prevention: 避免接触患病动物",
+      "Prevention: 加强猫咪免疫力"
+    ],
+    "constraints": {
+      "source": "owner_feedback",
+      "rating": 5,
+      "species": "cat",
+      "condition": "我家猫掉毛严重，皮肤有圆形红斑"
+    },
+    "validation": [
+      "feedback_score_gte_4"
+    ],
+    "version": 1,
+    "pet_experience": {
+      "condition": "我家猫掉毛严重，皮肤有圆形红斑",
+      "species": "cat",
+      "breed": "美短虎斑",
+      "treatments": [
+        {
+          "method": "抗真菌药物治疗",
+          "effectiveness": 0.9,
+          "notes": "口服或外用抗真菌药治疗猫癣有效"
+        },
+        {
+          "method": "药浴治疗",
+          "effectiveness": 0.8,
+          "notes": "使用抗真菌洗剂进行药浴辅助治疗"
+        },
+        {
+          "method": "环境消毒",
+          "effectiveness": 0.85,
+          "notes": "对居住环境进行彻底消毒防止复发"
+        }
+      ],
+      "dietAdjustments": [
+        "增加优质蛋白质摄入",
+        "补充Omega-3脂肪酸",
+        "补充维生素B族"
+      ],
+      "preventionTips": [
+        "定期驱虫和体检",
+        "保持环境清洁干燥",
+        "避免接触患病动物",
+        "加强猫咪免疫力"
+      ],
+      "confidence": 0.8,
+      "sampleSize": 1
+    }
   }
 ]

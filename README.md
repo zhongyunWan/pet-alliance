@@ -1,5 +1,6 @@
-# PetAlliance 养宠联盟
 
+# PetAlliance 养宠联盟
+<img width="1376" height="768" alt="image (19)" src="https://github.com/user-attachments/assets/7778e5b4-69e3-4c2d-8193-6e5284f2de36" />
 基于 LLM 的多智能体宠物护理咨询系统。四个专业智能体（医疗、健康、饮食、寄养）通过 5 阶段编排管线协作，提供专业的宠物护理建议。知识通过基因进化协议（GEP）在咨询间持续进化。
 
 ## 系统架构

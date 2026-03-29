@@ -35,7 +35,9 @@ const SYSTEM_PROMPT = `你是一个专业的宠物寄养服务专家，专注于
 协作要求：
 - 接收健康Agent提供的特殊护理需求（如每日注射胰岛素）
 - 接收饮食Agent提供的喂养说明（食物种类、用量、禁忌）
-- 将寄养时间约束发送给其他Agent`;
+- 将寄养时间约束发送给其他Agent
+
+重要：你必须只回答与用户咨询问题直接相关的寄养建议。如果用户的问题与寄养/托管领域无关（如健康问题、行为问题、饮食选择等），请返回空的items数组。不要主动补充用户没有问到的建议，除非这些与用户的具体问题直接相关。`;
 
 export class BoardingAgent extends BaseAgent {
   constructor() {
@@ -75,7 +77,7 @@ ${constraintText ? `其他Agent提供的约束：\n${constraintText}` : ''}
 ${request.parsedContext?.boardingDates ? `寄养日期：${request.parsedContext.boardingDates.start} 至 ${request.parsedContext.boardingDates.end}` : ''}
 ${request.parsedContext?.specialRequirements ? `特殊要求：${request.parsedContext.specialRequirements.join('、')}` : ''}
 
-请返回JSON格式的寄养建议：
+请返回JSON格式的寄养建议。如果用户的问题与寄养托管无关，items必须为空数组[]。只给出与用户问题直接相关的建议（0-2条）：
 {
   "items": [
     {

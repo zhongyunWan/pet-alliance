@@ -33,11 +33,11 @@ const agents = [
 
 const orchestrator = new PetOrchestrator(agents);
 
-// GEP Client for EvoMap integration
+// GEP Client for EvoMap integration (HTTP mode for real EvoMap connection)
 const gepClient = new GepClient({
   hubUrl: process.env.GEP_HUB_URL || 'https://evomap.ai',
-  nodeId: process.env.GEP_NODE_ID || 'petalliance-main',
-  transportMode: 'file',
+  nodeId: process.env.EVOMAP_NODE_SECRET ? (process.env.GEP_NODE_ID || '') : '',
+  transportMode: 'http',
 });
 
 orchestrator.setGepClient(gepClient as any);
@@ -269,6 +269,16 @@ app.get('/api/genes', (_req, res) => {
     res.json({ status: 'ok', genes: JSON.parse(content) });
   } catch {
     res.json({ status: 'ok', genes: [] });
+  }
+});
+
+// Clear all genes
+app.delete('/api/genes', async (_req, res) => {
+  try {
+    await gepClient.clearAllGenes();
+    res.json({ status: 'ok', message: 'All genes cleared' });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: (error as Error).message });
   }
 });
 

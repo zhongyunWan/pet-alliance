@@ -1,47 +1,197 @@
 [
   {
-    "id": "pet_treatment_experience_v1",
+    "id": "pet_2岁英短需要做什么疫苗和驱虫？_7608af06",
     "category": "optimize",
-    "signals_match": ["pet_health", "treatment_success", "symptom_resolved"],
-    "preconditions": ["sample_size_gte_5"],
-    "strategy": [
-      "Extract symptom-treatment pairs from resolved cases",
-      "Score by recovery speed and owner satisfaction",
-      "Package with species/breed/age applicability tags",
-      "Validate treatment safety against known contraindications"
+    "signals_match": [
+      "pet_health",
+      "treatment_success",
+      "2岁英短需要做什么疫苗和驱虫？",
+      "cat"
     ],
-    "constraints": { "max_files": 5 },
-    "validation": ["npm test -- --grep treatment"],
-    "version": 1
+    "preconditions": [
+      "treatment_method: 猫三联疫苗(FVRCP)",
+      "treatment_method: 狂犬疫苗",
+      "treatment_method: 室内猫体内驱虫"
+    ],
+    "strategy": [
+      "Treatment: 猫三联疫苗(FVRCP) (effectiveness: 0.95)",
+      "Treatment: 狂犬疫苗 (effectiveness: 0.95)",
+      "Treatment: 室内猫体内驱虫 (effectiveness: 0.85)",
+      "Prevention: 定期接种疫苗保持免疫保护",
+      "Prevention: 室内猫仍需定期体内驱虫",
+      "Prevention: 每年进行健康检查"
+    ],
+    "constraints": {
+      "source": "owner_feedback",
+      "rating": 5,
+      "species": "cat",
+      "condition": "2岁英短需要做什么疫苗和驱虫？"
+    },
+    "validation": [
+      "feedback_score_gte_4"
+    ],
+    "version": 1,
+    "pet_experience": {
+      "condition": "2岁英短需要做什么疫苗和驱虫？",
+      "species": "cat",
+      "breed": "英短蓝猫",
+      "treatments": [
+        {
+          "method": "猫三联疫苗(FVRCP)",
+          "effectiveness": 0.95,
+          "notes": "预防猫瘟、猫杯状病毒、猫鼻气管炎"
+        },
+        {
+          "method": "狂犬疫苗",
+          "effectiveness": 0.95,
+          "notes": "预防狂犬病，户外活动必需"
+        },
+        {
+          "method": "室内猫体内驱虫",
+          "effectiveness": 0.85,
+          "notes": "建议每6-12个月驱虫一次"
+        }
+      ],
+      "dietAdjustments": [],
+      "preventionTips": [
+        "定期接种疫苗保持免疫保护",
+        "室内猫仍需定期体内驱虫",
+        "每年进行健康检查"
+      ],
+      "confidence": 0.8,
+      "sampleSize": 1
+    }
   },
   {
-    "id": "pet_diet_adaptation_v1",
+    "id": "pet_哈基米经常对我哈气怎么办_cd37f878",
     "category": "optimize",
-    "signals_match": ["diet_feedback", "health_improvement", "pet_nutrition"],
-    "preconditions": ["sample_size_gte_5"],
-    "strategy": [
-      "Analyze diet-health correlation from feeding logs",
-      "Extract effective diet patterns by breed and condition",
-      "Share validated nutrition insights across similar pets",
-      "Flag allergen risks based on breed-specific data"
+    "signals_match": [
+      "pet_health",
+      "treatment_success",
+      "哈基米经常对我哈气怎么办",
+      "cat"
     ],
-    "constraints": { "max_files": 3 },
-    "validation": ["npm test -- --grep diet"],
-    "version": 1
+    "preconditions": [
+      "treatment_method: 猫咪哈气行为解读",
+      "treatment_method: 猫咪哈气行为处理",
+      "treatment_method: 疫苗接种提醒"
+    ],
+    "strategy": [
+      "Treatment: 猫咪哈气行为解读 (effectiveness: 0.9)",
+      "Treatment: 猫咪哈气行为处理 (effectiveness: 0.9)",
+      "Treatment: 疫苗接种提醒 (effectiveness: 0.85)",
+      "Diet: 低脂高蛋白减肥方案",
+      "Prevention: 定期疫苗接种保持健康",
+      "Prevention: 关注猫咪情绪变化",
+      "Prevention: 提供安全舒适的环境"
+    ],
+    "constraints": {
+      "source": "owner_feedback",
+      "rating": 5,
+      "species": "cat",
+      "condition": "哈基米经常对我哈气怎么办"
+    },
+    "validation": [
+      "feedback_score_gte_4"
+    ],
+    "version": 1,
+    "pet_experience": {
+      "condition": "哈基米经常对我哈气怎么办",
+      "species": "cat",
+      "breed": "橘猫",
+      "treatments": [
+        {
+          "method": "猫咪哈气行为解读",
+          "effectiveness": 0.9,
+          "notes": "帮助主人理解猫咪哈气的原因和情绪状态"
+        },
+        {
+          "method": "猫咪哈气行为处理",
+          "effectiveness": 0.9,
+          "notes": "提供具体的应对方法和行为矫正技巧"
+        },
+        {
+          "method": "疫苗接种提醒",
+          "effectiveness": 0.85,
+          "notes": "预防因疾病不适导致的攻击性行为"
+        }
+      ],
+      "dietAdjustments": [
+        "低脂高蛋白减肥方案"
+      ],
+      "preventionTips": [
+        "定期疫苗接种保持健康",
+        "关注猫咪情绪变化",
+        "提供安全舒适的环境"
+      ],
+      "confidence": 0.8,
+      "sampleSize": 1
+    }
   },
   {
-    "id": "cross_pet_knowledge_transfer_v1",
-    "category": "innovate",
-    "signals_match": ["new_symptom", "no_local_experience", "similar_case_found"],
-    "preconditions": ["source_gene_validated", "no_active_errors"],
-    "strategy": [
-      "Match symptoms against known Gene patterns by species and breed similarity",
-      "Transfer applicable treatment insights with 0.7 confidence threshold",
-      "Mark transferred insights as unverified until first feedback",
-      "Calibrate confidence after 3 owner interactions with target condition"
+    "id": "pet_哈基米不吃南北绿豆怎么办_3d6afcdb",
+    "category": "repair",
+    "signals_match": [
+      "pet_health",
+      "treatment_success",
+      "哈基米不吃南北绿豆怎么办",
+      "cat"
     ],
-    "constraints": { "max_files": 3 },
-    "validation": ["npm test -- --grep transfer"],
-    "version": 1
+    "preconditions": [
+      "treatment_method: 排查身体不适",
+      "treatment_method: 定时多餐制",
+      "treatment_method: 挑食改善方案"
+    ],
+    "strategy": [
+      "Treatment: 排查身体不适 (effectiveness: 0.7)",
+      "Treatment: 定时多餐制 (effectiveness: 0.5)",
+      "Treatment: 挑食改善方案 (effectiveness: 0.3)",
+      "Diet: 豆类非猫必需食物，可换符合食性的肉类",
+      "Diet: 尝试逐步混合新旧食物适应",
+      "Prevention: 尊重猫作为肉食动物的天然食性",
+      "Prevention: 避免强迫喂食不熟悉的食物"
+    ],
+    "constraints": {
+      "source": "owner_feedback",
+      "rating": 2,
+      "species": "cat",
+      "condition": "哈基米不吃南北绿豆怎么办"
+    },
+    "validation": [
+      "feedback_score_lte_2"
+    ],
+    "version": 1,
+    "pet_experience": {
+      "condition": "哈基米不吃南北绿豆怎么办",
+      "species": "cat",
+      "breed": "橘猫",
+      "treatments": [
+        {
+          "method": "排查身体不适",
+          "effectiveness": 0.7,
+          "notes": "排查方向正确但需更具体检查口腔或消化问题"
+        },
+        {
+          "method": "定时多餐制",
+          "effectiveness": 0.5,
+          "notes": "可改善整体食欲但对特定食物偏好效果有限"
+        },
+        {
+          "method": "挑食改善方案",
+          "effectiveness": 0.3,
+          "notes": "方案效果不理想，需重新评估"
+        }
+      ],
+      "dietAdjustments": [
+        "豆类非猫必需食物，可换符合食性的肉类",
+        "尝试逐步混合新旧食物适应"
+      ],
+      "preventionTips": [
+        "尊重猫作为肉食动物的天然食性",
+        "避免强迫喂食不熟悉的食物"
+      ],
+      "confidence": 0.5,
+      "sampleSize": 1
+    }
   }
 ]

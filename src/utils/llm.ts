@@ -80,8 +80,9 @@ ${JSON.stringify(request.schema, null, 2)}
 RULES:
 - Output ONLY the raw JSON object, starting with { or [
 - No markdown fences, no explanation, no thinking process, no <think> tags
+- No numbered lists, no plain text — ONLY valid JSON
 - Keep responses concise: use short descriptions (under 50 chars each)
-- Limit array items to at most 10 entries`;
+- Array items should only include truly relevant entries — return empty arrays when nothing applies`;
 
   const raw = await callClaude({
     ...request,
@@ -109,8 +110,64 @@ RULES:
         return JSON.parse(repaired) as T;
       } catch { /* fall through */ }
     }
+
+    // Fallback: try to parse numbered list format like "[0] title - desc [1] ..."
+    const fallback = parseNumberedListFallback(cleaned);
+    if (fallback) {
+      return fallback as T;
+    }
+
     throw new Error(`Failed to parse LLM structured response: ${cleaned.slice(0, 200)}...`);
   }
+}
+
+/**
+ * Fallback parser for when the LLM returns numbered plain text instead of JSON.
+ * Handles formats like: "[0] title - desc [1] title - desc ..." or "1. title - desc"
+ */
+function parseNumberedListFallback(text: string): Record<string, unknown> | null {
+  // Match patterns like [0] or [1] or 1. or 1) followed by content
+  const itemPattern = /(?:\[(\d+)\]|\b(\d+)[.)]\s)/g;
+  const splits: string[] = [];
+  let lastIdx = 0;
+  let match: RegExpExecArray | null;
+
+  // Find all number markers and split text
+  const markers: number[] = [];
+  while ((match = itemPattern.exec(text)) !== null) {
+    if (markers.length > 0) {
+      splits.push(text.slice(lastIdx, match.index).trim());
+    }
+    markers.push(match.index);
+    lastIdx = match.index + match[0].length;
+  }
+  if (markers.length > 0) {
+    splits.push(text.slice(lastIdx).trim());
+  }
+
+  if (splits.length === 0) return null;
+
+  // Parse each split into {title, description}
+  const items = splits.filter(s => s.length > 0).slice(0, 4).map(s => {
+    // Try "title - description" or "title: description" split
+    const dashIdx = s.indexOf(' - ');
+    const colonIdx = s.indexOf('：');
+    const sepIdx = dashIdx >= 0 ? dashIdx : colonIdx;
+    const sepLen = dashIdx >= 0 ? 3 : 1;
+
+    const title = sepIdx >= 0 ? s.slice(0, sepIdx).trim() : s.slice(0, 30).trim();
+    const description = sepIdx >= 0 ? s.slice(sepIdx + sepLen).trim() : s.trim();
+
+    return {
+      type: 'health_advice',
+      title: title.slice(0, 50),
+      description: description.slice(0, 200),
+      priority: 'medium',
+      metadata: {},
+    };
+  });
+
+  return { items, constraints: [], confidence: 0.6 };
 }
 
 function repairTruncatedJson(json: string): string | null {

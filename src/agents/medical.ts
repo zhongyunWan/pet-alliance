@@ -33,7 +33,9 @@ const SYSTEM_PROMPT = `你是一个经验丰富的宠物医生，专注于症状
 - 始终建议严重症状去宠物医院就诊
 - 不替代专业兽医的面诊
 - 用药建议标注"请遵医嘱"
-- 紧急情况（中毒、大量出血、呼吸困难等）立即标记为urgent`;
+- 紧急情况（中毒、大量出血、呼吸困难等）立即标记为urgent
+
+重要：你必须只回答与用户咨询问题直接相关的医疗建议。如果用户的问题不涉及症状、疾病、用药等医疗领域（如行为问题、饮食选择、寄养安排等），请返回空的items数组。不要主动补充用户没有问到的建议，除非这些与用户的具体问题直接相关。`;
 
 export class MedicalAgent extends BaseAgent {
   constructor() {
@@ -66,7 +68,7 @@ ${constraintText}
 咨询类型：${request.type}
 ${request.parsedContext ? `紧急程度：${request.parsedContext.urgency}\n症状：${request.parsedContext.symptoms?.join('、') || '无明确症状'}\n关注点：${request.parsedContext.concerns.join('、')}` : ''}
 
-请返回JSON格式的医疗建议：
+请返回JSON格式的医疗建议。如果用户的问题不涉及症状、疾病或用药，items必须为空数组[]。只给出与用户问题直接相关的建议（0-2条）：
 {
   "items": [
     {

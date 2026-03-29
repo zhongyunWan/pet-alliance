@@ -41,6 +41,9 @@ export class RecipeManager {
     );
   }
   async addRecipe(recipe: GeneRecipe): Promise<void> {
+    // Reload from file to avoid stale in-memory data overwriting cleared file
+    await this.reloadFromFile();
+
     const existing = this.recipes.findIndex((r) => r.id === recipe.id);
     if (existing !== -1) {
       this.recipes[existing] = recipe;
@@ -56,6 +59,30 @@ export class RecipeManager {
       description: `Gene ${recipe.id} v${recipe.version} added to recipe store`,
       signals: ['gene_created', recipe.category],
     });
+  }
+
+  async clearAll(): Promise<void> {
+    this.recipes = [];
+    await this.persist();
+
+    log({
+      level: 'info',
+      source: 'recipe_manager',
+      message: 'All Gene Recipes cleared',
+      signals: ['gene_cleared'],
+    });
+  }
+
+  private async reloadFromFile(): Promise<void> {
+    if (!this.filePath) return;
+    try {
+      const raw = readFileSync(this.filePath, 'utf-8');
+      const data = JSON.parse(raw) as unknown[];
+      this.recipes = data.map((item) => this.normalizeRecipe(item as Record<string, unknown>));
+    } catch {
+      // File missing or invalid — treat as empty
+      this.recipes = [];
+    }
   }
 
   private async persist(): Promise<void> {

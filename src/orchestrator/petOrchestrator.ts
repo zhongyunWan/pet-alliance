@@ -115,18 +115,43 @@ export class PetOrchestrator {
       }
     }
 
-    // === Phase 3: All agents propose in parallel (with pet profile context) ===
+    // === Phase 3: Only relevant agents propose in parallel ===
     const agentProposals: AgentProposalSummary[] = [];
     const proposals: Proposal[] = [];
 
-    const startTimes = this.agents.map(() => Date.now());
+    const relevantDomains = context.relevantDomains ?? [];
+    const relevantAgents = relevantDomains.length > 0
+      ? this.agents.filter(a => relevantDomains.includes(a.domain))
+      : this.agents; // fallback: all agents if no domains specified
+
+    log({
+      level: 'info',
+      source: 'Orchestrator',
+      message: `Relevant domains: [${relevantDomains.join(', ')}], invoking ${relevantAgents.length}/${this.agents.length} agents`,
+      signals: ['routing'],
+    });
+
+    // Record skipped agents
+    for (const agent of this.agents) {
+      if (!relevantAgents.includes(agent)) {
+        agentProposals.push({
+          agentId: agent.id,
+          domain: agent.domain,
+          items: [],
+          confidence: 0,
+          durationMs: 0,
+        });
+      }
+    }
+
+    const startTimes = relevantAgents.map(() => Date.now());
     const results = await Promise.allSettled(
-      this.agents.map(agent => agent.propose(request, pet, [])),
+      relevantAgents.map(agent => agent.propose(request, pet, [])),
     );
 
     for (let i = 0; i < results.length; i++) {
       const result = results[i];
-      const agent = this.agents[i];
+      const agent = relevantAgents[i];
       const durationMs = Date.now() - startTimes[i];
 
       if (result.status === 'fulfilled') {
@@ -176,8 +201,12 @@ export class PetOrchestrator {
         { phase: 'conflict', message: `冲突修正: ${c.description} → ${c.resolution}` }, totalRounds);
     }
 
-    // === Phase 5: Assemble final result ===
-    const recommendations = fixedItems;
+    // === Phase 5: Deduplicate and assemble final result ===
+    const deduped = this.deduplicateItems(fixedItems);
+
+    const priorityOrder: Record<string, number> = { urgent: 0, high: 1, medium: 2, low: 3 };
+    const sorted = deduped.sort((a, b) => (priorityOrder[a.priority] ?? 3) - (priorityOrder[b.priority] ?? 3));
+    const recommendations = sorted.slice(0, 2);
     const processingTimeMs = Date.now() - startTime;
 
     const consultResult: ConsultResult = {
@@ -219,13 +248,79 @@ export class PetOrchestrator {
 
   // --- Private helpers ---
 
+  /**
+   * Deduplicate items with similar titles/descriptions.
+   * Keeps the item with the longer (more detailed) description.
+   */
+  private deduplicateItems(items: ProposalItem[]): ProposalItem[] {
+    if (items.length <= 1) return items;
+
+    const kept: ProposalItem[] = [];
+    for (const item of items) {
+      const duplicate = kept.find(existing => this.isSimilar(existing, item));
+      if (duplicate) {
+        // Keep the one with more detail
+        if (item.description.length > duplicate.description.length) {
+          const idx = kept.indexOf(duplicate);
+          kept[idx] = item;
+        }
+      } else {
+        kept.push(item);
+      }
+    }
+
+    log({
+      level: 'info',
+      source: 'Orchestrator',
+      message: `Dedup: ${items.length} items → ${kept.length} unique`,
+      signals: ['dedup'],
+    });
+
+    return kept;
+  }
+
+  /**
+   * Check if two items are semantically similar based on keyword overlap.
+   */
+  private isSimilar(a: ProposalItem, b: ProposalItem): boolean {
+    const normalize = (s: string) => s.replace(/[，。、！？\s]/g, '');
+    const titleA = normalize(a.title);
+    const titleB = normalize(b.title);
+
+    // Exact or near-exact title match
+    if (titleA === titleB) return true;
+
+    // Extract keywords (Chinese chars in chunks + meaningful segments)
+    const getKeywords = (text: string): Set<string> => {
+      const words = new Set<string>();
+      // Split on common delimiters and collect 2-4 char segments
+      const segments = text.split(/[，。、！？\s,.:;]+/).filter(s => s.length >= 2);
+      for (const seg of segments) {
+        words.add(seg);
+        // Also add 2-char sliding window for Chinese text matching
+        for (let i = 0; i <= seg.length - 2; i++) {
+          words.add(seg.slice(i, i + 2));
+        }
+      }
+      return words;
+    };
+
+    const kwA = getKeywords(a.title + a.description);
+    const kwB = getKeywords(b.title + b.description);
+    const intersection = [...kwA].filter(w => kwB.has(w)).length;
+    const union = new Set([...kwA, ...kwB]).size;
+    const similarity = union > 0 ? intersection / union : 0;
+
+    return similarity > 0.5;
+  }
+
   private async parseContext(request: ConsultRequest): Promise<ParsedPetContext> {
     if (request.parsedContext) {
       return request.parsedContext;
     }
 
     return callClaudeStructured<ParsedPetContext>({
-      systemPrompt: '你是一个宠物咨询请求解析器。将用户的自然语言咨询解析为结构化数据。',
+      systemPrompt: '你是一个宠物咨询请求解析器。将用户的自然语言咨询解析为结构化数据。你需要精准判断用户问题涉及哪些专业领域。',
       userMessage: `解析以下宠物咨询请求：
 "${request.text}"
 
@@ -236,8 +331,22 @@ export class PetOrchestrator {
   "concerns": ["用户关注点"],
   "dietaryNeeds": ["饮食需求，如无则为空数组"],
   "boardingDates": { "start": "YYYY-MM-DD", "end": "YYYY-MM-DD" } 或 null,
-  "specialRequirements": ["特殊要求"]
-}`,
+  "specialRequirements": ["特殊要求"],
+  "relevantDomains": ["相关领域数组"]
+}
+
+relevantDomains的取值范围和判断标准：
+- "health"：涉及疫苗、驱虫、健康检查、行为异常、预防保健
+- "diet"：涉及饮食、营养、喂食、猫粮狗粮、食物选择、体重管理
+- "medical"：涉及生病症状、疾病诊断、用药、就医、受伤、中毒
+- "boarding"：涉及寄养、托管、外出照顾、出差旅行期间宠物安排
+
+只选择与用户问题直接相关的领域。例如：
+- "猫为什么睡纸箱不睡猫窝" → ["health"]（行为问题属于健康领域）
+- "猫拉稀怎么办" → ["medical", "diet"]（症状需要医疗，可能涉及饮食调整）
+- "出差一周猫怎么安排" → ["boarding"]
+- "猫粮推荐" → ["diet"]
+不要添加用户没有问到的领域。`,
       schema: { type: 'object' },
       schemaName: 'ParsedPetContext',
     });

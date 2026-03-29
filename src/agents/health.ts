@@ -30,7 +30,9 @@ const SYSTEM_PROMPT = `你是一个专业的宠物健康管理专家，专注于
 - 给出具体的时间节点和频率建议
 - 标注优先级（urgent/high/medium/low）
 - 考虑宠物的过敏史和用药情况
-- 如发现紧急健康风险，优先级标为urgent`;
+- 如发现紧急健康风险，优先级标为urgent
+
+重要：你必须只回答与用户咨询问题直接相关的健康建议。如果用户的问题与健康管理领域完全无关（如饮食选择、寄养安排等），请返回空的items数组。行为相关的问题（如睡眠习惯、异常行为等）属于你的职责范围，你应该从健康和行为学角度给出分析和建议。不要主动补充用户没有问到的建议（如疫苗提醒、体检建议等），除非这些与用户的具体问题直接相关。`;
 
 export class HealthAgent extends BaseAgent {
   constructor() {
@@ -64,7 +66,7 @@ export class HealthAgent extends BaseAgent {
 ${request.parsedContext ? `紧急程度：${request.parsedContext.urgency}\n症状：${request.parsedContext.symptoms?.join('、') || '无'}\n关注点：${request.parsedContext.concerns.join('、')}` : ''}
 ${constraintText}
 
-请返回JSON格式的健康建议，包含items数组，每项包含：
+请返回JSON格式的健康建议。行为相关问题（如睡眠习惯、异常行为）请从健康和行为学角度分析。如果用户的问题与健康管理完全无关，items才为空数组[]。只给出与用户问题直接相关的建议（1-2条）：
 {
   "items": [
     {

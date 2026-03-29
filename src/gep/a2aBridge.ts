@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, unlinkSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { log } from '../utils/logger.js';
 import { v4 as uuid } from 'uuid';
@@ -35,7 +35,7 @@ export interface A2AConfig {
   heartbeatIntervalMs?: number;
 }
 
-const DEFAULT_HEARTBEAT_MS = 6 * 60 * 1000;
+const DEFAULT_HEARTBEAT_MS = 5 * 60 * 1000; // 5 min as required by EvoMap
 
 export class A2ABridge {
   private config: A2AConfig;
@@ -89,14 +89,17 @@ export class A2ABridge {
 
   async hello(capabilities: string[]): Promise<void> {
     this.capabilities = capabilities;
-    const payload = {
-      name: 'PetAlliance',
-      version: '0.1.0',
-      capabilities,
+
+    // EvoMap requires capabilities as object, plus model and env_fingerprint
+    const payload: Record<string, unknown> = {
+      capabilities: {},
+      model: process.env.LLM_MODEL || 'minimax-m2.5',
+      env_fingerprint: { platform: process.platform, arch: process.arch },
     };
 
     const env = this.envelope('hello', payload);
-    if (!this.config.nodeId) {
+    // sender_id is omitted on first hello (Hub assigns node_id)
+    if (!this.config.nodeId || this.config.nodeId === 'petalliance-main') {
       delete env.sender_id;
     }
 
@@ -117,6 +120,19 @@ export class A2ABridge {
         }
         if (result.heartbeat_interval_ms) {
           this.config.heartbeatIntervalMs = result.heartbeat_interval_ms as number;
+        }
+
+        // Persist credentials to .env for next restart
+        this.persistCredentials();
+
+        // Log claim URL for user to link their EvoMap account
+        if (result.claim_url) {
+          log({
+            level: 'info',
+            source: 'a2a_bridge',
+            message: `Claim your node at: ${result.claim_url}`,
+            signals: ['a2a_claim', 'user_action'],
+          });
         }
       }
     }
@@ -191,18 +207,33 @@ export class A2ABridge {
   startHeartbeat(): void {
     if (this.heartbeatTimer) return;
 
-    this.heartbeatTimer = setInterval(async () => {
+    const sendHeartbeat = async () => {
       try {
-        const env = this.envelope('heartbeat', {
-          node_id: this.config.nodeId,
-          status: 'active',
-          capabilities: this.capabilities,
-          uptime: process.uptime(),
-        });
         if (this.config.mode === 'file') {
+          const env = this.envelope('heartbeat', {
+            node_id: this.config.nodeId,
+            status: 'active',
+            capabilities: this.capabilities,
+            uptime: process.uptime(),
+          });
           await this.fileSend(this.envelopeToLegacy(env));
         } else {
-          await this.httpSendRaw('/a2a/heartbeat', env, true);
+          // EvoMap heartbeat is REST format (no envelope), just node_id + auth header
+          const url = `${this.config.hubUrl}/a2a/heartbeat`;
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: this.authHeaders(),
+            body: JSON.stringify({ node_id: this.config.nodeId }),
+          });
+
+          if (response.ok) {
+            const data = (await response.json()) as Record<string, unknown>;
+            // Use server-suggested interval if provided
+            if (data.next_heartbeat_ms) {
+              this.config.heartbeatIntervalMs = data.next_heartbeat_ms as number;
+              this.restartHeartbeatTimer();
+            }
+          }
         }
       } catch (err) {
         log({
@@ -212,13 +243,28 @@ export class A2ABridge {
           signals: ['a2a_heartbeat_fail', 'error'],
         });
       }
-    }, this.config.heartbeatIntervalMs);
+    };
+
+    // Send first heartbeat immediately
+    sendHeartbeat();
+    this.heartbeatTimer = setInterval(sendHeartbeat, this.config.heartbeatIntervalMs);
 
     log({
       level: 'info',
       source: 'a2a_bridge',
       message: `Heartbeat started (interval: ${this.config.heartbeatIntervalMs}ms)`,
       signals: ['a2a_heartbeat_start'],
+    });
+  }
+
+  private restartHeartbeatTimer(): void {
+    if (!this.heartbeatTimer) return;
+    // Will take effect on next cycle naturally; just log the change
+    log({
+      level: 'info',
+      source: 'a2a_bridge',
+      message: `Heartbeat interval updated to ${this.config.heartbeatIntervalMs}ms`,
+      signals: ['a2a_heartbeat_interval_update'],
     });
   }
 
@@ -235,6 +281,45 @@ export class A2ABridge {
   }
 
   // --- Private transport methods ---
+
+  private persistCredentials(): void {
+    try {
+      const envPath = join(process.cwd(), '.env');
+      let content = '';
+      if (existsSync(envPath)) {
+        content = readFileSync(envPath, 'utf-8');
+      }
+
+      // Update or add GEP_NODE_ID
+      if (content.includes('GEP_NODE_ID=')) {
+        content = content.replace(/GEP_NODE_ID=.*/, `GEP_NODE_ID=${this.config.nodeId}`);
+      } else {
+        content += `\nGEP_NODE_ID=${this.config.nodeId}`;
+      }
+
+      // Update or add EVOMAP_NODE_SECRET
+      if (content.includes('EVOMAP_NODE_SECRET=')) {
+        content = content.replace(/EVOMAP_NODE_SECRET=.*/, `EVOMAP_NODE_SECRET=${this.nodeSecret}`);
+      } else {
+        content += `\nEVOMAP_NODE_SECRET=${this.nodeSecret}`;
+      }
+
+      writeFileSync(envPath, content);
+      log({
+        level: 'info',
+        source: 'a2a_bridge',
+        message: 'Credentials persisted to .env',
+        signals: ['credentials_saved'],
+      });
+    } catch (err) {
+      log({
+        level: 'warn',
+        source: 'a2a_bridge',
+        message: `Failed to persist credentials: ${err instanceof Error ? err.message : String(err)}`,
+        signals: ['credentials_save_error', 'error'],
+      });
+    }
+  }
 
   private envelopeToLegacy(env: A2AEnvelope): A2AMessage {
     return {

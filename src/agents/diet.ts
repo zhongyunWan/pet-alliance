@@ -34,7 +34,9 @@ const SYSTEM_PROMPT = `你是一个专业的宠物营养师，专注于宠物饮
 回复要求：
 - 给出具体的品牌/食材推荐和克数
 - 标注每日喂食次数和时间
-- 列出必须避免的食物`;
+- 列出必须避免的食物
+
+重要：你必须只回答与用户咨询问题直接相关的饮食建议。如果用户的问题与饮食/营养领域无关（如行为问题、健康检查、寄养安排等），请返回空的items数组。不要主动补充用户没有问到的建议（如体重管理、食谱推荐等），除非这些与用户的具体问题直接相关。`;
 
 export class DietAgent extends BaseAgent {
   constructor() {
@@ -68,7 +70,7 @@ ${constraintText}
 咨询类型：${request.type}
 ${request.parsedContext?.dietaryNeeds ? `饮食需求：${request.parsedContext.dietaryNeeds.join('、')}` : ''}
 
-请返回JSON格式的饮食建议：
+请返回JSON格式的饮食建议。如果用户的问题与饮食营养无关，items必须为空数组[]。只给出与用户问题直接相关的建议（0-2条）：
 {
   "items": [
     {

@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { log, logEvolutionEvent } from '../utils/logger.js';
 import { A2ABridge, type A2AConfig } from './a2aBridge.js';
 import { RecipeManager } from './recipes.js';
-import { buildGeneAsset } from './assetBuilder.js';
+import { buildBundle } from './assetBuilder.js';
 import type { GeneRecipe } from '../types.js';
 
 export interface GepClientConfig {
@@ -52,15 +52,17 @@ export class GepClient {
   async publishGene(gene: GeneRecipe): Promise<void> {
     await this.recipes.addRecipe(gene);
 
-    const geneAsset = buildGeneAsset(gene);
+    // Build complete bundle: Gene + Capsule + EvolutionEvent
+    const assets = buildBundle(gene);
 
-    await this.bridge.validate([geneAsset]);
-    await this.bridge.publish([geneAsset]);
+    await this.bridge.validate(assets);
+    await this.bridge.publish(assets);
 
+    const geneAssetId = assets[0].asset_id as string;
     logEvolutionEvent({
       type: 'gene_published',
       geneId: gene.id,
-      description: `Published Gene ${gene.id} v${gene.version} (asset_id: ${geneAsset.asset_id}) to EvoMap network`,
+      description: `Published bundle for Gene ${gene.id} v${gene.version} (asset_id: ${geneAssetId}) to EvoMap network`,
       signals: ['gene_published', 'a2a_publish', gene.category],
     });
   }
@@ -114,6 +116,16 @@ export class GepClient {
       signals: ['gene_miss', 'new_condition', 'no_local_experience'],
     });
     return null;
+  }
+
+  async clearAllGenes(): Promise<void> {
+    await this.recipes.clearAll();
+    log({
+      level: 'info',
+      source: 'gep_client',
+      message: 'All genes cleared from local store',
+      signals: ['genes_cleared'],
+    });
   }
 
   async reportFeedback(geneId: string, score: number, context: string): Promise<void> {

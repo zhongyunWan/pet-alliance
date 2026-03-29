@@ -59,6 +59,7 @@ export interface ParsedPetContext {
   dietaryNeeds?: string[];
   boardingDates?: { start: string; end: string };
   specialRequirements?: string[];
+  relevantDomains?: string[]; // Which agent domains are relevant: health, diet, medical, boarding
 }
 
 export interface AgentCapability {

@@ -2,15 +2,426 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>养宠联盟 — PetAlliance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>养宠联盟</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Noto Serif SC"', 'Georgia', 'serif'],
+          },
+        },
+      },
+    }
+  </script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-    .agent-msg { animation: fadeIn 0.3s ease-in; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .gene-card { transition: all 0.3s ease; }
-    .gene-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+    * { -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+      background: #faf9f7;
+    }
+
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+    /* Reveal animation */
+    .reveal { animation: reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    @keyframes reveal {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal-delay-1 { animation-delay: 0.1s; }
+    .reveal-delay-2 { animation-delay: 0.2s; }
+    .reveal-delay-3 { animation-delay: 0.3s; }
+    .reveal-delay-4 { animation-delay: 0.4s; }
+
+    /* Subtle fade */
+    .fade { animation: fade 0.4s ease both; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+    /* Spin */
+    .spin { animation: spin 2s linear infinite; display: inline-block; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    /* Pulse */
+    .pulse { animation: pulse 2.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* No scrollbar */
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+
+    /* Divider line */
+    .line-through-text { display: flex; align-items: center; gap: 12px; }
+    .line-through-text::before, .line-through-text::after {
+      content: ''; flex: 1; height: 1px; background: #e5e2dd;
+    }
+
+    /* Report card */
+    .report-card {
+      background: #fff;
+      border: 1px solid #e8e6e1;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+    .report-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #e0ddd8 20%, #e0ddd8 80%, transparent);
+    }
+    .priority-bar { width: 3px; border-radius: 2px; flex-shrink: 0; }
+    .priority-urgent { background: #ef4444; }
+    .priority-high { background: #f59e0b; }
+    .priority-normal { background: #d6d3d1; }
+
+    /* Feedback glow */
+    .feedback-glow {
+      animation: glowPulse 2s ease-out both;
+    }
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 0 0 rgba(120, 113, 100, 0.3); }
+      50% { box-shadow: 0 0 20px 4px rgba(120, 113, 100, 0.15); }
+      100% { box-shadow: 0 0 0 0 rgba(120, 113, 100, 0); }
+    }
+
+    /* Checkmark draw */
+    .check-draw svg path {
+      stroke-dasharray: 24;
+      stroke-dashoffset: 24;
+      animation: drawCheck 0.4s 0.2s ease-out forwards;
+    }
+    @keyframes drawCheck {
+      to { stroke-dashoffset: 0; }
+    }
+
+    /* Sparkle float */
+    .sparkle-float {
+      animation: sparkleUp 0.6s ease-out both;
+    }
+    @keyframes sparkleUp {
+      from { opacity: 0; transform: translateY(8px) scale(0.5); }
+      50% { opacity: 1; transform: translateY(-2px) scale(1.1); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Fade collapse for feedback buttons */
+    .feedback-exit {
+      animation: feedbackExit 0.3s ease-out forwards;
+    }
+    @keyframes feedbackExit {
+      to { opacity: 0; transform: scale(0.95); height: 0; margin: 0; padding: 0; overflow: hidden; }
+    }
+
+    /* Onboarding transitions */
+    .onboarding-exit {
+      animation: onboardingExit 0.7s cubic-bezier(0.4, 0, 0, 1) forwards;
+      will-change: transform, opacity;
+    }
+    @keyframes onboardingExit {
+      0% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.97) translateY(-16px); }
+    }
+
+    /* Cross-fade layer: keeps onboarding visible during transition */
+    .transition-layer-exit {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      pointer-events: none;
+      will-change: opacity;
+      animation: layerFadeOut 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes layerFadeOut {
+      0% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .main-enter {
+      animation: mainEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+      will-change: transform, opacity;
+    }
+    @keyframes mainEnter {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+      animation: overlayIn 0.3s ease both;
+    }
+    @keyframes overlayIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal-overlay-exit {
+      animation: overlayOut 0.25s ease forwards;
+    }
+    @keyframes overlayOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    /* Modal sheet */
+    .modal-sheet {
+      animation: sheetUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes sheetUp {
+      from { opacity: 0; transform: translateY(100%); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-sheet-exit {
+      animation: sheetDown 0.3s cubic-bezier(0.4, 0, 1, 1) forwards;
+    }
+    @keyframes sheetDown {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(100%); }
+    }
+
+    /* Float-in for onboarding elements */
+    .float-in {
+      animation: floatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes floatIn {
+      from { opacity: 0; transform: translateY(40px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Gentle breathe for cat illustration */
+    .breathe {
+      animation: breathe 3s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    /* Input focus glow */
+    .input-glow:focus-within {
+      box-shadow: 0 0 0 3px rgba(120, 113, 108, 0.08);
+    }
+
+    /* Page slide-in for gene library */
+    .page-slide-in {
+      animation: pageSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes pageSlideIn {
+      from { opacity: 0; transform: translateX(40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    /* Input area collapse when loading starts */
+    .loading-input-collapse {
+      animation: inputCollapse 0.5s cubic-bezier(0.4, 0, 0, 1) forwards;
+      overflow: hidden;
+    }
+    @keyframes inputCollapse {
+      0% { opacity: 1; max-height: 200px; margin-bottom: 24px; }
+      100% { opacity: 0; max-height: 0; margin-bottom: 0; padding-top: 0; padding-bottom: 0; }
+    }
+
+    /* ═══ Consult Loading animations ═══ */
+
+    /* Cat gentle breathe */
+    .loading-cat-breathe {
+      animation: loadingCatBreathe 3s ease-in-out infinite;
+    }
+    @keyframes loadingCatBreathe {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); }
+      50% { transform: translate(-50%, -50%) scale(1.04) translateY(-2px); }
+    }
+
+    /* Tail wag */
+    .loading-tail-wag {
+      transform-origin: 47px 39px;
+      animation: tailWag 1.8s ease-in-out infinite;
+    }
+    @keyframes tailWag {
+      0%, 100% { transform: rotate(0deg); }
+      30% { transform: rotate(8deg); }
+      70% { transform: rotate(-5deg); }
+    }
+
+    /* Thought bubbles float */
+    .loading-thought-1 {
+      animation: thoughtFloat 2.4s ease-in-out infinite;
+    }
+    .loading-thought-2 {
+      animation: thoughtFloat 2.4s ease-in-out infinite 0.4s;
+    }
+    @keyframes thoughtFloat {
+      0%, 100% { opacity: 0.4; transform: translateY(0) scale(1); }
+      50% { opacity: 1; transform: translateY(-3px) scale(1.2); }
+    }
+
+    /* Orbit rotation */
+    .loading-orbit {
+      animation: orbitSpin 8s linear infinite;
+    }
+    @keyframes orbitSpin {
+      from { transform: rotate(var(--start-angle, 0deg)); }
+      to { transform: rotate(calc(var(--start-angle, 0deg) + 360deg)); }
+    }
+
+    /* Counter-rotate to keep icons upright */
+    .loading-orbit-counter {
+      animation: orbitCounterSpin 8s linear infinite;
+    }
+    @keyframes orbitCounterSpin {
+      from { transform: translate(-50%, -50%) rotate(calc(-1 * var(--start-angle, 0deg))); }
+      to { transform: translate(-50%, -50%) rotate(calc(-1 * var(--start-angle, 0deg) - 360deg)); }
+    }
+
+    /* Node pulse glow */
+    .loading-node-pulse {
+      animation: nodePulse 2s ease-in-out infinite;
+    }
+    @keyframes nodePulse {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      50% { transform: scale(1.12); filter: brightness(1.15); }
+    }
+
+    /* Connection lines fade */
+    .loading-line {
+      animation: lineFade 3s ease-in-out infinite;
+    }
+    @keyframes lineFade {
+      0%, 100% { opacity: 0; }
+      30%, 70% { opacity: 0.6; }
+    }
+
+    /* Phase text crossfade */
+    .loading-phase-text {
+      animation: phaseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    @keyframes phaseIn {
+      from { opacity: 0; transform: translateY(8px); filter: blur(4px); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    /* Paw prints appear sequentially */
+    .loading-paw {
+      opacity: 0;
+      animation: pawAppear 1.6s ease-out infinite;
+    }
+    @keyframes pawAppear {
+      0% { opacity: 0; transform: scale(0) translateY(4px); }
+      20% { opacity: 0.7; transform: scale(1.1) translateY(-1px); }
+      40% { opacity: 0.5; transform: scale(1) translateY(0); }
+      80%, 100% { opacity: 0.15; transform: scale(0.9) translateY(0); }
+    }
+
+    /* ═══ Gene Card ═══ */
+    .gene-card {
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02);
+      transition: box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .gene-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03);
+    }
+    .gene-card:active {
+      transform: scale(0.985);
+    }
+
+    .gene-category-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 10px 2px 8px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    .gene-category-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+    }
+
+    .gene-effectiveness-ring {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .gene-effectiveness-inner {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    .gene-expand-wrapper {
+      overflow: hidden;
+      transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.35s ease;
+    }
+
+    .gene-section-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #a8a29e;
+    }
+
+    .gene-treatment-item {
+      padding: 8px 0;
+    }
+
+    .gene-eff-track {
+      height: 3px;
+      background: #f5f5f4;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .gene-eff-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .gene-tag {
+      display: inline-block;
+      font-size: 10px;
+      color: #a8a29e;
+      letter-spacing: 0.04em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: #fafaf9;
+      border: 1px solid #f0efed;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .fade { animation: none; }
+      .pulse, .spin { animation: none; }
+      .feedback-glow, .check-draw svg path, .sparkle-float, .feedback-exit { animation: none; }
+      .onboarding-exit, .main-enter, .transition-layer-exit, .modal-overlay, .modal-sheet { animation: none; }
+      .float-in, .breathe { animation: none; }
+      .loading-input-collapse { animation: none; opacity: 0; max-height: 0; overflow: hidden; }
+      .loading-cat-breathe, .loading-tail-wag, .loading-thought-1, .loading-thought-2 { animation: none; }
+      .loading-orbit, .loading-orbit-counter, .loading-node-pulse, .loading-line { animation: none; }
+      .loading-phase-text, .loading-paw { animation: none; opacity: 1; }
+      .page-slide-in { animation: none; }
+      .gene-card { transition: none; }
+      .gene-expand-wrapper { transition: none; }
+      .gene-eff-fill { transition: none; }
+    }
   </style>
 </head>
 <body>

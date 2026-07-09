@@ -1,8 +1,6 @@
 # PetAlliance 养宠联盟
 
-![PetAlliance 演示视频](docs/demo/pet-alliance-demo.gif)
-
-**完整带音乐视频：** [点击观看 MP4](docs/demo/pet-alliance-demo.mp4)
+https://github.com/user-attachments/assets/571e9bbb-1f51-418a-849f-be27d7494c77
 
 PetAlliance 是一个面向宠物主的多智能体宠物护理咨询系统。它把“猫咪不舒服，我该怎么办？”这类焦虑问题，转成带宠物档案、多专家协作、优先级判断和经验沉淀的护理建议。
 
